@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
-
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.*;
 /**
  *
  * @author Thomas
@@ -21,7 +25,8 @@ public class CommandeMP3WS {
     private ArrayList<String> listSupprimer = new ArrayList<String>();
     private ArrayList<String> listRechercher = new ArrayList<String>();
     private ArrayList<String> listAjouter = new ArrayList<String>();
-       
+    private ArrayList<String> listMusique = new ArrayList<String>();
+     
     public CommandeMP3WS()
     {
         //Pour jouer
@@ -45,6 +50,29 @@ public class CommandeMP3WS {
         listAjouter.add("rajoute");         
     }
     
+    private void getListMusique()
+    {
+        Connection con = null;
+        Statement statement = null;
+        try
+        {
+            listMusique.clear();
+            Class.forName("org.sqlite.JDBC");
+            con = DriverManager.getConnection("mp3.db");
+            statement = con.createStatement();
+            statement.setQueryTimeout(10);       
+            ResultSet resultSet =  statement.executeQuery("SELECT titre FROM musique");
+            while ( resultSet.next() )
+            {
+                listMusique.add(resultSet.getString("titre"));
+            }
+            con.close();
+        }catch(Exception e)
+        {
+            System.err.println(e.getMessage());
+        }
+        
+    }
     /**
      * Web service operation
      */
@@ -79,15 +107,19 @@ public class CommandeMP3WS {
      * Web service operation
      */
     @WebMethod(operationName = "getTitre")
-    public String getTitre(@WebParam(name = "listMusique") java.util.ArrayList<String> listMusique, @WebParam(name = "phrase") String phrase) {
+    public String getTitre(@WebParam(name = "phrase") String phrase) {
         //TODO write your implementation code here:
+        //Récupération de la liste de musique à jour
+        getListMusique();
         //On cherche si le titre est présent
-        for(String titre : listMusique)
+        if(!listMusique.isEmpty())
+        {
+            for(String titre : listMusique)
             if(phrase.toLowerCase().contains(titre.toLowerCase()))
                 return titre;
         //Si pas de titre trouvé
         return null;
-        
+        }
+        return "la liste de musique est vide";
     }
-
 }
