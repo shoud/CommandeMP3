@@ -74,4 +74,20 @@ public class CommandeMP3WS {
             //return commande.erreur;
             return "erreur";
     }
+
+    /**
+     * Web service operation
+     */
+    @WebMethod(operationName = "getTitre")
+    public String getTitre(@WebParam(name = "listMusique") java.util.ArrayList<String> listMusique, @WebParam(name = "phrase") String phrase) {
+        //TODO write your implementation code here:
+        //On cherche si le titre est présent
+        for(String titre : listMusique)
+            if(phrase.toLowerCase().contains(titre.toLowerCase()))
+                return titre;
+        //Si pas de titre trouvé
+        return null;
+        
+    }
+
 }
